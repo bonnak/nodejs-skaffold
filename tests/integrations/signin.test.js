@@ -19,4 +19,35 @@ describe('Signin', () => {
 
     expect(body).to.haveOwnProperty('token');
   });
+
+  it('fails when a user that does not exist is supplied', async () => {
+    await request.post('/api/auth/signin')
+      .send({
+        username: 'not-exist-user',
+        password: 'secret',
+      })
+      .expect(400);
+  });
+
+  it('fails when an incorrect password is supplied', async () => {
+    await userFactory.create({ username: 'user1', password: 'secret' });
+
+    await request.post('/api/auth/signin')
+      .send({
+        username: 'user1',
+        password: 'wrong-password',
+      })
+      .expect(400);
+  });
+
+  it('fails when a user is disabled', async () => {
+    await userFactory.create({ username: 'user1', password: 'secret', disabled: true });
+
+    await request.post('/api/auth/signin')
+      .send({
+        username: 'user1',
+        password: 'secret',
+      })
+      .expect(400);
+  });
 });

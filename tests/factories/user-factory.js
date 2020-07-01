@@ -3,11 +3,10 @@ const User = require('../../src/models/user');
 const factory = require('.');
 
 const data = (props = {}) => {
-  const username = faker.internet.userName();
-
   const defaultProps = {
-    username,
+    username: faker.internet.userName(),
     password: 'secret',
+    guard: 'Consumer',
   };
 
   return { ...defaultProps, ...props };

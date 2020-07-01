@@ -18,6 +18,10 @@ module.exports = {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    guard: {
+      type: DataTypes.ENUM('Back office', 'Consumer'),
+      allowNull: false,
+    },
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE,

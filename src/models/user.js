@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { config, BaseModel } = require('@bonnak/toolset');
 const connection = require('../database');
+const AuthToken = require('./auth-token');
 
 class User extends BaseModel {
   static async register({ username, password }) {
@@ -24,6 +25,12 @@ class User extends BaseModel {
       config.get('auth.jwt.secret'),
       { expiresIn: '365d' },
     );
+
+    await AuthToken.create({
+      userId: this.id,
+      token,
+      revoked: false,
+    });
 
     return token;
   }
@@ -76,6 +83,7 @@ User.init(
       },
     },
     disabled: DataTypes.BOOLEAN,
+    guard: DataTypes.ENUM('Back office', 'Consumer'),
   },
   {
     sequelize: connection,
