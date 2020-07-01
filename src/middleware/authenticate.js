@@ -1,32 +1,30 @@
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const { isArray } = require('lodash');
-const { config } = require('@bonnak/toolset');
+const { config, NotAllowError } = require('@bonnak/toolset');
 const User = require('../models/user');
 
 const fnUnAuthorizedReqResponse = (res) => res.status(401).json({
   message: 'Unauthorized request',
 });
 
-const extractToken = (req, res) => {
+const extractToken = (req) => {
   if (req.headers.authorization) {
     const [tokenType, token] = req.headers.authorization.split(' ');
 
-    if (tokenType.toLowerCase() !== 'bearer') return fnUnAuthorizedReqResponse(res);
+    if (tokenType.toLowerCase() !== 'bearer') throw new NotAllowError();
 
     return token;
   }
 
-  if (!req.session.jwt) {
-    return fnUnAuthorizedReqResponse(res);
-  }
+  if (!req.session.jwt) throw new NotAllowError();
 
   return req.session.jwt;
 };
 
 const requireAuth = (...guard) => async (req, res, next) => {
   try {
-    const token = extractToken(req, res);
+    const token = extractToken(req);
 
     const decodedToken = jwt.verify(token, config.get('auth.jwt.secret'));
     const user = await User.findOne({
