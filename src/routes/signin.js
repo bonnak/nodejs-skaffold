@@ -16,6 +16,8 @@ module.exports = (router) => {
         const user = await User.attemptToAuthenticate({ username, password });
         const token = await user.generateAccessToken();
 
+        req.session = { jwt: token };
+
         return res.json({ token });
       } catch (err) {
         return res.status(401).json({ message: err.message });
