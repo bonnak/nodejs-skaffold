@@ -8,11 +8,25 @@ const fnUnAuthorizedReqResponse = (res) => res.status(401).json({
   message: 'Unauthorized request',
 });
 
-const requireAuth = (...guard) => async (req, res, next) => {
-  try {
+const extractToken = (req, res) => {
+  if (req.headers.authorization) {
     const [tokenType, token] = req.headers.authorization.split(' ');
 
     if (tokenType.toLowerCase() !== 'bearer') return fnUnAuthorizedReqResponse(res);
+
+    return token;
+  }
+
+  if (!req.session.jwt) {
+    return fnUnAuthorizedReqResponse(res);
+  }
+
+  return req.session.jwt;
+};
+
+const requireAuth = (...guard) => async (req, res, next) => {
+  try {
+    const token = extractToken(req, res);
 
     const decodedToken = jwt.verify(token, config.get('auth.jwt.secret'));
     const user = await User.findOne({
