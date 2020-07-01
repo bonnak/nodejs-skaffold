@@ -12,16 +12,12 @@ module.exports = (router) => {
     async (req, res) => {
       const { username, password } = req.body;
 
-      try {
-        const user = await User.attemptToAuthenticate({ username, password });
-        const token = await user.generateAccessToken();
+      const user = await User.attemptToAuthenticate({ username, password });
+      const token = await user.generateAccessToken();
 
-        req.session = { jwt: token };
+      req.session = { jwt: token };
 
-        return res.json({ token });
-      } catch (err) {
-        return res.status(401).json({ message: err.message });
-      }
+      return res.json({ token });
     },
   );
 };
