@@ -1,0 +1,31 @@
+{
+    "env": {
+        "commonjs": true,
+        "es6": true,
+        "node": true,
+        "mocha": true
+    },
+    "plugins": [
+        "chai-friendly"
+    ],
+    "extends": [
+        "airbnb-base",
+        "plugin:chai-friendly/recommended"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
+    },
+    "rules": {
+        "semi": ["error", "always"],
+        "consistent-return": "off",
+        "no-restricted-globals": ["error", "event", "fdescribe"],
+        "max-len": ["error", { "code": 150 }],
+        "no-underscore-dangle": "off",
+        "radix": "off",
+        "global-require": "off"
+    }
+}

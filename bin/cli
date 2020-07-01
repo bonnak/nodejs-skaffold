@@ -1,0 +1,221 @@
+#!/usr/bin/env node
+
+const path = require('path');
+const { spawn } = require('child_process');
+const { config } = require('@bonnak/toolset');
+
+const [,, option, ...args] = process.argv;
+
+function runCmd(cmd, ags, opt = {}) {
+  const child = spawn(cmd, ags, {
+    cwd: path.join(__dirname, '..'),
+    shell: true,
+    stdio: 'inherit',
+    ...opt,
+  });
+
+  // child.stderr.pipe(process.stderr, {end: false});
+  // child.stdout.pipe(process.stdout, {end: false});
+
+  child.on('exit', (code) => {
+    process.exit(code);
+  });
+}
+
+if (option === 'run:test') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env.test' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    'NODE_ENV=test',
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/mocha'),
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:model:generate') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'model:generate',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:migration:generate') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'migration:generate',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:migrate') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'db:migrate',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:migrate:undo') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'db:migrate:undo',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:migrate:undo:all') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'db:migrate:undo:all',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:seed:generate') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'seed:generate',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:seed:all') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'db:seed:all',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
+
+if (option === 'db:seed:undo:all') {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: '.env' });
+  // eslint-disable-next-line global-require
+  const { configVariable } = require('../src/config');
+  config.load(configVariable);
+
+  const cmd = [
+    path.join(__dirname, '../node_modules/.bin/cross-env'),
+    `DB_CONNECTION=${config.get('db.dialect')}`,
+    `DB_HOST=${config.get('db.host')}`,
+    `DB_PORT=${config.get('db.port')}`,
+    `DB_NAME=${config.get('db.database')}`,
+    `DB_USER=${config.get('db.username')}`,
+    `DB_PASSWORD=${config.get('db.password')}`,
+    path.join(__dirname, '../node_modules/.bin/sequelize-cli'),
+    'db:seed:undo:all',
+  ].join(' ');
+
+  runCmd(cmd, args);
+}
