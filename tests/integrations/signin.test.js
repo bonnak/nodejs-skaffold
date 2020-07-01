@@ -10,10 +10,10 @@ beforeEach(async () => {
 });
 
 describe('Signin', () => {
-  it('Should return an access token', async () => {
+  it('response with an access token when given valid credentials', async () => {
     await userFactory.create({ username: 'user1', password: 'secret' });
 
-    const { body } = await request.post('/api/auth/login')
+    const { body } = await request.post('/api/auth/signin')
       .send({ username: 'user1', password: 'secret' })
       .expect(200);
 

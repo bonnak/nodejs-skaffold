@@ -4,7 +4,7 @@ const User = require('../models/user');
 
 module.exports = (router) => {
   router.post(
-    '/auth/login',
+    '/auth/signin',
     validateRequest([
       body('username').notEmpty().withMessage('Required'),
       body('password').notEmpty().withMessage('Required'),
