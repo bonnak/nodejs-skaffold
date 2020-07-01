@@ -1,4 +1,4 @@
-const Sequelize = require('sequelize');
+const { DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { config, BaseModel } = require('@bonnak/toolset');
@@ -61,13 +61,13 @@ class User extends BaseModel {
 User.init(
   {
     id: {
-      type: Sequelize.UUID,
+      type: DataTypes.UUID,
       primaryKey: true,
-      defaultValue: Sequelize.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
     },
-    username: Sequelize.STRING,
+    username: DataTypes.STRING,
     password: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       set(password) {
         this.setDataValue(
           'password',
@@ -75,7 +75,7 @@ User.init(
         );
       },
     },
-    disabled: Sequelize.BOOLEAN,
+    disabled: DataTypes.BOOLEAN,
   },
   {
     sequelize: connection,
