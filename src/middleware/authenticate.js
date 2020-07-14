@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const { isArray } = require('lodash');
 const { config, NotAllowError } = require('@bonnak/toolset');
-const User = require('../models/user');
+const { User, AuthToken } = require('../models').models;
 
 const fnUnAuthorizedReqResponse = (res) => res.status(401).json({
   message: 'Unauthorized request',
@@ -37,7 +37,10 @@ const requireAuth = (...guard) => async (req, res, next) => {
       },
     });
 
-    if (user === null) return fnUnAuthorizedReqResponse(res);
+    if (user === null) throw new NotAllowError();
+
+    const authToken = await AuthToken.findOne({ where: { token } });
+    if (authToken.revoked) throw new NotAllowError();
 
     req.user = user;
     req.authToken = token;

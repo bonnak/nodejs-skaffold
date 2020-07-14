@@ -1,94 +1,156 @@
-const { DataTypes } = require('sequelize');
+const _ = require('lodash');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { config, BaseModel } = require('@bonnak/toolset');
-const connection = require('../database');
-const AuthToken = require('./auth-token');
+const { config, BaseModel, ModelNotFoundError } = require('@bonnak/toolset');
 
-class User extends BaseModel {
-  static async register({ username, password }) {
-    const user = await this.create({
-      username,
-      password,
-    });
+module.exports = (sequelize, DataTypes) => {
+  class User extends BaseModel {
+    static async register({ phoneNumber, password }) {
+      const user = await this.create({
+        phoneNumber,
+        username: phoneNumber,
+        password,
+        confirmed: false,
+        confirmCode: this.generateConfirmCode(),
+        guard: 'Consumer',
+      });
 
-    return user;
-  }
-
-  validatePassword(password) {
-    return bcrypt.compare(password, this.password);
-  }
-
-  async generateAccessToken() {
-    const token = jwt.sign(
-      { userId: this.id },
-      config.get('auth.jwt.secret'),
-      { expiresIn: '365d' },
-    );
-
-    await AuthToken.create({
-      userId: this.id,
-      token,
-      revoked: false,
-    });
-
-    return token;
-  }
-
-  static async attemptToAuthenticate({ username, password }) {
-    const user = await User.findOne({
-      where: {
-        username,
-        disabled: false,
-      },
-    });
-
-    if (user === null) {
-      throw new Error('Invalid credentials');
+      return user;
     }
 
-    const attemptPassed = await user.validatePassword(password);
-
-    if (!attemptPassed) {
-      throw new Error('Invalid credentials');
+    validatePassword(password) {
+      return bcrypt.compare(password, this.password());
     }
 
-    return user;
+    async generateAccessToken() {
+      const accessToken = jwt.sign(
+        { userId: this.id },
+        config.get('auth.jwt.secret'),
+        { expiresIn: '365d' },
+      );
+
+      await sequelize.models.AuthToken.create({ token: accessToken, userId: this.id });
+
+      return accessToken;
+    }
+
+    static async attemptToAuthenticate({
+      phoneNumber, username, password, guard,
+    }) {
+      const user = await User.findOne({
+        where: {
+          username: phoneNumber || username,
+          confirmed: true,
+          disabled: false,
+          guard,
+        },
+      });
+
+      if (user === null) {
+        throw new Error('Invalid credentials');
+      }
+
+      const attemptPassed = await user.validatePassword(password);
+
+      if (!attemptPassed) {
+        throw new Error('Invalid credentials');
+      }
+
+      return user;
+    }
+
+    static generateConfirmCode() {
+      const min = 10000;
+      const max = 100000;
+
+      return min + Math.floor((max - min) * Math.random());
+    }
+
+    static async confirmRegistration({ phoneNumber, confirmCode }) {
+      const user = await User.findOne({ where: { phoneNumber, confirmCode } });
+
+      if (user === null) {
+        throw new ModelNotFoundError('Invalid confirmed code');
+      }
+
+      return user.update({ confirmed: true, confirmCode: null });
+    }
+
+    get isBackOffice() {
+      return this.getDataValue('guard') === 'Back office';
+    }
   }
 
-  toJSON() {
-    const data = { ...this.get() };
-
-    delete data.password;
-
-    return data;
-  }
-}
-
-User.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
-    },
-    username: DataTypes.STRING,
-    password: {
-      type: DataTypes.STRING,
-      set(password) {
-        this.setDataValue(
-          'password',
-          bcrypt.hashSync(password, parseInt(config.get('auth.jwt.salt'))),
-        );
+  User.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        allowNull: false,
+        primaryKey: true,
       },
-    },
-    disabled: DataTypes.BOOLEAN,
-    guard: DataTypes.ENUM('Back office', 'Consumer'),
-  },
-  {
-    sequelize: connection,
-    paranoid: true,
-  },
-);
+      username: {
+        unique: true,
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
+      phoneNumber: DataTypes.STRING,
+      password: {
+        type: DataTypes.STRING,
+        set(password) {
+          this.setDataValue(
+            'password',
+            bcrypt.hashSync(password, parseInt(process.env.JWT_SALT_ROUND)),
+          );
+        },
+        get() {
+          return () => this.getDataValue('password');
+        },
+      },
+      firstName: {
+        type: DataTypes.STRING,
+      },
+      lastName: {
+        type: DataTypes.STRING,
+      },
+      fullName: {
+        type: DataTypes.VIRTUAL(DataTypes.STRING, ['firstName', 'lastName']),
+        set(value) {
+          const names = value.split(' ');
+          this.setDataValue(
+            'firstName',
+            _.capitalize(names.slice(0, 1).join(' ')),
+          );
+          this.setDataValue('lastName', _.capitalize(names.slice(1).join(' ')));
+        },
+        get() {
+          const firstName = this.getDataValue('firstName') || '';
+          const lastName = this.getDataValue('lastName') || '';
+          const fullName = `${firstName} ${lastName}`.trim() || null;
 
-module.exports = User;
+          return fullName;
+        },
+      },
+      confirmed: {
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
+      },
+      confirmCode: {
+        type: DataTypes.STRING,
+      },
+      disabled: {
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
+      },
+      photo: DataTypes.STRING,
+      guard: DataTypes.ENUM('Back office', 'Consumer'),
+      isRoot: DataTypes.BOOLEAN,
+    },
+    {
+      sequelize,
+      paranoid: true,
+    },
+  );
+
+  return User;
+};

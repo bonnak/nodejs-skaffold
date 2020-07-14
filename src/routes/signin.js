@@ -1,6 +1,6 @@
 const { body } = require('express-validator');
 const { validateRequest } = require('@bonnak/toolset');
-const User = require('../models/user');
+const { User } = require('../models').models;
 
 module.exports = (router) => {
   router.post(

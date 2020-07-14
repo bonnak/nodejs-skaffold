@@ -1,27 +1,51 @@
-const { DataTypes } = require('sequelize');
-const { BaseModel } = require('@bonnak/toolset');
-const connection = require('../database');
+const jwt = require('jsonwebtoken');
+const { BaseModel, config } = require('@bonnak/toolset');
 
-class AuthToken extends BaseModel {
-  revoke() {
-    return this.update({ revoked: true });
+module.exports = (sequelize, DataTypes) => {
+  class AuthToken extends BaseModel {
+    revoke() {
+      return this.update({ revoked: true });
+    }
+
+    get revoked() {
+      return !!this.getDataValue('revoked');
+    }
+
+    static async validate(token) {
+      const authToken = await AuthToken.findOneOrThrow({
+        where: {
+          token,
+          revoked: false,
+        },
+      });
+
+      jwt.verify(authToken.token, config.get('auth.jwt.secret'));
+    }
   }
-}
 
-AuthToken.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
+  AuthToken.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        primaryKey: true,
+        defaultValue: DataTypes.UUIDV4,
+      },
+      userId: DataTypes.UUID,
+      token: DataTypes.STRING,
+      revoked: DataTypes.BOOLEAN,
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+      },
     },
-    userId: DataTypes.UUID,
-    token: DataTypes.STRING,
-    revoked: DataTypes.BOOLEAN,
-  },
-  {
-    sequelize: connection,
-  },
-);
+    {
+      sequelize,
+    },
+  );
 
-module.exports = AuthToken;
+  return AuthToken;
+};

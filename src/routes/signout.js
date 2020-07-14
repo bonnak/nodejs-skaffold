@@ -1,5 +1,5 @@
 const { requireAuth, guardEnum } = require('../middleware/authenticate');
-const AuthToken = require('../models/auth-token');
+const { AuthToken } = require('../models').models;
 
 module.exports = (router) => {
   router.post(
