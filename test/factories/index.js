@@ -8,13 +8,13 @@ module.exports = (model, data) => ({
 
     return model.create(dataProps);
   },
-  bulkCreate: (count, props = {}) => {
+  bulkCreate: async (count, props = {}) => {
     const arrObj = [];
 
     for (let i = 0; i < count; i += 1) {
       arrObj.push(data(props));
     }
 
-    return model.bulkCreate(arrObj);
+    return model.bulkCreate(await Promise.all(arrObj));
   },
 });
