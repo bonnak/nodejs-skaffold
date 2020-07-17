@@ -22,28 +22,6 @@ function runCmd(cmd, ags, opt = {}) {
   });
 }
 
-if (option === 'run:test') {
-  // eslint-disable-next-line global-require
-  require('dotenv').config({ path: '.env' });
-  // eslint-disable-next-line global-require
-  const configVariable = require('../src/config');
-  config.load(configVariable);
-
-  const cmd = [
-    path.join(__dirname, '../node_modules/.bin/cross-env'),
-    'NODE_ENV=test',
-    `DB_CONNECTION=${config.get('db.dialect')}`,
-    `DB_HOST=${config.get('db.host')}`,
-    `DB_PORT=${config.get('db.port')}`,
-    `DB_NAME=${config.get('db.database')}`,
-    `DB_USER=${config.get('db.username')}`,
-    `DB_PASSWORD=${config.get('db.password')}`,
-    path.join(__dirname, '../node_modules/.bin/mocha'),
-  ].join(' ');
-
-  runCmd(cmd, args);
-}
-
 if (option === 'db:model:generate') {
   // eslint-disable-next-line global-require
   require('dotenv').config({ path: '.env' });
