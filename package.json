@@ -27,8 +27,8 @@
     "lodash": "^4.17.15",
     "pg": "^8.2.1",
     "pg-hstore": "^2.3.3",
-    "sequelize": "^6.2.4",
-    "sequelize-cli": "^6.1.0",
+    "sequelize": "^6.3.3",
+    "sequelize-cli": "^6.2.0",
     "uuid": "^8.1.0",
     "xss-clean": "^0.1.1"
   },
