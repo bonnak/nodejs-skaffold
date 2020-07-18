@@ -1,2 +1,3 @@
 exit: false
 timeout: false
+spec: 'test/**/*.test.js'
