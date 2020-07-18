@@ -1,7 +1,7 @@
+const fs = require('fs');
+const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
 const { config } = require('@bonnak/toolset');
-const UserModel = require('./user');
-const AuthTokenModel = require('./auth-token');
 
 const sequelize = new Sequelize(
   config.get('db.database'),
@@ -21,11 +21,19 @@ const sequelize = new Sequelize(
   },
 );
 
-sequelize.authenticate();
+fs
+  .readdirSync(__dirname)
+  .filter((file) => file !== path.basename(__filename) && file.slice(-3) === '.js')
+  .forEach((file) => {
+    // eslint-disable-next-line import/no-dynamic-require
+    const model = require(path.join(__dirname, file));
+    model(sequelize, DataTypes);
+  });
 
-const User = UserModel(sequelize, DataTypes);
-const AuthToken = AuthTokenModel(sequelize, DataTypes);
-
-User.hasMany(AuthToken, { as: 'tokens' });
+Object.keys(sequelize.models).forEach((modelName) => {
+  if (sequelize.models[modelName].associate) {
+    sequelize.models[modelName].associate(sequelize.models);
+  }
+});
 
 module.exports = sequelize;

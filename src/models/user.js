@@ -5,6 +5,10 @@ const { config, BaseModel, ModelNotFoundError } = require('@bonnak/toolset');
 
 module.exports = (sequelize, DataTypes) => {
   class User extends BaseModel {
+    static associate(models) {
+      models.User.hasMany(models.AuthToken, { as: 'tokens' });
+    }
+
     static async register({ phoneNumber, password }) {
       const user = await this.create({
         phoneNumber,
